@@ -14,23 +14,26 @@
   <div id="contador" class="counter">00000</div>
 
   <script>
-    /* URL del Apps Script (sustituye por la tuya) */
-    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzjaA2H0sXuSt6cndXCmcoN-eIlRxSbvOcmKPasEXhj-tr-Jjkm6FxXnRLAu3uzxrqS8g/exec';
+    /* 1. URL del Apps Script (cámbiala por la tuya) */
+    const URL = 'https://script.google.com/macros/s/AKfycbyxSBdT7tEyfErQOgR5Qw_1McHdGdMaVPxyRTYimDawBAfnLKLh2Z57znJS2aF2P_4CUA/exec';
 
-    /* No repetir en la misma sesión del navegador */
-    const MARK = 'alreadyCounted';
+    /* 2. Marca para no volver a contar en este navegador */
+    const MARK = 'gsites_counted';
+
     (async () => {
       try {
-        if (localStorage.getItem(MARK)) {
-          // Solo mostrar sin sumar
-          const res = await fetch(ENDPOINT);
-          document.getElementById('contador').textContent = await res.text();
-        } else {
-          // Sumar y marcar
-          const res = await fetch(ENDPOINT + '?ip=' + Date.now());
-          const cifra = await res.text();
-          document.getElementById('contador').textContent = cifra;
-          localStorage.setItem(MARK, '1');   // marca para no volver a contar
+        // Mostrar cifra actual
+        const r1 = await fetch(URL);
+        const current = await r1.text();
+        document.getElementById('contador').textContent = current;
+
+        // Incrementar solo la primera vez
+        if (!localStorage.getItem(MARK)) {
+          await fetch(URL, {method: 'POST'});   // llama a doPost
+          localStorage.setItem(MARK, '1');
+          // Opcional: refrescar para mostrar la nueva cifra
+          const r2 = await fetch(URL);
+          document.getElementById('contador').textContent = await r2.text();
         }
       } catch (e) {
         document.getElementById('contador').textContent = 'ERROR';
