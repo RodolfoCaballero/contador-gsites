@@ -4,40 +4,34 @@
   <meta charset="UTF-8"/>
   <title>Contador de visitas</title>
   <style>
-    body{
-      margin:0;
-      background:#001f3f;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100vh;
-      font-family:'Courier New',Courier,monospace;
-    }
-    .counter{
-      background:#0074D9;
-      color:#fff;
-      padding:8px 16px;
-      border-radius:4px;
-      font-size:32px;
-      letter-spacing:4px;
-      min-width:180px;
-      text-align:center;
-    }
+    body{margin:0;background:#001f3f;display:flex;align-items:center;
+         justify-content:center;height:100vh;font-family:'Courier New',monospace}
+    .counter{background:#0074D9;color:#fff;padding:8px 16px;border-radius:4px;
+             font-size:32px;letter-spacing:4px;min-width:180px;text-align:center}
   </style>
 </head>
 <body>
   <div id="contador" class="counter">00000</div>
 
   <script>
-    /* -------- 1. PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT -------- */
+    /* URL del Apps Script (sustituye por la tuya) */
     const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzjaA2H0sXuSt6cndXCmcoN-eIlRxSbvOcmKPasEXhj-tr-Jjkm6FxXnRLAu3uzxrqS8g/exec';
-    /* ----------------------------------------------------------- */
 
+    /* No repetir en la misma sesión del navegador */
+    const MARK = 'alreadyCounted';
     (async () => {
       try {
-        const res  = await fetch(ENDPOINT);
-        const cifra = await res.text();      // devuelve "00001", "00002", etc.
-        document.getElementById('contador').textContent = cifra;
+        if (localStorage.getItem(MARK)) {
+          // Solo mostrar sin sumar
+          const res = await fetch(ENDPOINT);
+          document.getElementById('contador').textContent = await res.text();
+        } else {
+          // Sumar y marcar
+          const res = await fetch(ENDPOINT + '?ip=' + Date.now());
+          const cifra = await res.text();
+          document.getElementById('contador').textContent = cifra;
+          localStorage.setItem(MARK, '1');   // marca para no volver a contar
+        }
       } catch (e) {
         document.getElementById('contador').textContent = 'ERROR';
       }
