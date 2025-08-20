@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Contador de visitas</title>
+  <style>
+    body{
+      margin:0;
+      background:#001f3f;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      font-family:'Courier New',Courier,monospace;
+    }
+    .counter{
+      background:#0074D9;
+      color:#fff;
+      padding:8px 16px;
+      border-radius:4px;
+      font-size:32px;
+      letter-spacing:4px;
+      min-width:180px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div id="contador" class="counter">00000</div>
+
+  <script>
+    /* ---------------- CONFIG ---------------- */
+    const BOX_ID = 'tu_id_unico_aqui';   // Cambia esto por algo único
+    const ENDPOINT = `https://jsonbox.io/${BOX_ID}`;
+    const KEY = 'visitas';               // nombre del campo
+
+    /* ------------- LÓGICA DEL CONTADOR ----- */
+    async function obtenerCifra() {
+      const r = await fetch(`${ENDPOINT}?sort=_createdOn&limit=1`);
+      const data = await r.json();
+      return data.length ? data[0][KEY] : 0;
+    }
+
+    async function actualizarCifra(nueva) {
+      await fetch(ENDPOINT, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({[KEY]: nueva})
+      });
+    }
+
+    async function contar() {
+      const yaContado = localStorage.getItem('gsites_visit');
+      if (yaContado) return;
+
+      const c = await obtenerCifra();
+      const nuevo = c + 1;
+      await actualizarCifra(nuevo);
+      localStorage.setItem('gsites_visit','1');
+      formatear(nuevo);
+    }
+
+    function formatear(n) {
+      document.getElementById('contador').textContent = String(n).padStart(5,'0');
+    }
+
+    /* Arrancar */
+    (async () => {
+      const c = await obtenerCifra();
+      formatear(c);
+      contar();   // incrementa solo la primera vez
+    })();
+  </script>
+</body>
+</html>
