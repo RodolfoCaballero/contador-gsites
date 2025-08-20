@@ -29,46 +29,18 @@
   <div id="contador" class="counter">00000</div>
 
   <script>
-    /* ---------------- CONFIG ---------------- */
-    const BOX_ID = 'tu_id_unico_aqui';   // Cambia esto por algo único
-    const ENDPOINT = `https://jsonbox.io/${BOX_ID}`;
-    const KEY = 'visitas';               // nombre del campo
+    /* -------- 1. PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT -------- */
+    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzjaA2H0sXuSt6cndXCmcoN-eIlRxSbvOcmKPasEXhj-tr-Jjkm6FxXnRLAu3uzxrqS8g/exec';
+    /* ----------------------------------------------------------- */
 
-    /* ------------- LÓGICA DEL CONTADOR ----- */
-    async function obtenerCifra() {
-      const r = await fetch(`${ENDPOINT}?sort=_createdOn&limit=1`);
-      const data = await r.json();
-      return data.length ? data[0][KEY] : 0;
-    }
-
-    async function actualizarCifra(nueva) {
-      await fetch(ENDPOINT, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({[KEY]: nueva})
-      });
-    }
-
-    async function contar() {
-      const yaContado = localStorage.getItem('gsites_visit');
-      if (yaContado) return;
-
-      const c = await obtenerCifra();
-      const nuevo = c + 1;
-      await actualizarCifra(nuevo);
-      localStorage.setItem('gsites_visit','1');
-      formatear(nuevo);
-    }
-
-    function formatear(n) {
-      document.getElementById('contador').textContent = String(n).padStart(5,'0');
-    }
-
-    /* Arrancar */
     (async () => {
-      const c = await obtenerCifra();
-      formatear(c);
-      contar();   // incrementa solo la primera vez
+      try {
+        const res  = await fetch(ENDPOINT);
+        const cifra = await res.text();      // devuelve "00001", "00002", etc.
+        document.getElementById('contador').textContent = cifra;
+      } catch (e) {
+        document.getElementById('contador').textContent = 'ERROR';
+      }
     })();
   </script>
 </body>
